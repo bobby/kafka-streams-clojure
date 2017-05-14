@@ -2,7 +2,15 @@
 
 [Clojure transducers](https://clojure.org/reference/transducers)
 interface to
-[Kafka Streams](https://kafka.apache.org/documentation/streams).
+[Kafka Streams](https://kafka.apache.org/documentation/streams).  This
+combo provides the best of both worlds for building streaming
+applications on Kafka with Clojure:
+
+* Simple, declarative, idiomatic, composable, testable stream
+  transormation business logic via transducers
+* Easy, battle-hardened distributed system topology specification,
+  cluster partition rebalancing, state management, etc. via Kafka
+  Streams
 
 ## Usage
 
@@ -59,6 +67,35 @@ in the low-level `Processor` API.
 
 (.close producer)
 (.close kafka-streams)
+```
+
+## Dev, Build, Test
+
+This project uses [Leiningen](https://leiningen.org/) for dev, test,
+and build workflow.
+
+### Run Tests
+
+The test include an embedded, single-node Kafka/ZooKeeper cluster that
+runs on demand.
+
+``` bash
+lein test
+```
+
+### Run REPL
+
+To run via the REPL, you'll need to fire up a Kafka Cluster.
+
+``` bash
+lein repl
+```
+
+### Build and Push JAR
+
+``` bash
+lein jar
+lein deploy
 ```
 
 ## License
