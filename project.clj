@@ -5,7 +5,8 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.apache.kafka/kafka-streams "0.10.2.1"]]
-  :profiles {:dev {:dependencies [[org.apache.kafka/kafka_2.11 "0.10.2.1"]
+  :profiles {:dev {:resource-paths ["dev"]
+                   :dependencies [[org.apache.kafka/kafka_2.11 "0.10.2.1"]
                                   [ch.qos.logback/logback-classic "1.1.7"]
                                   [org.slf4j/jcl-over-slf4j "1.7.21"]
                                   [org.slf4j/log4j-over-slf4j "1.7.21"]
