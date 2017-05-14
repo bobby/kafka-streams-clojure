@@ -55,7 +55,7 @@ in the low-level `Processor` API.
 // Observe message come across topic "test" via kafka-console-consumer
 
 @(.send producer (ProducerRecord. "tset" "baz" "quux"))
-// Observe message come across topic "test" via kafka-console-consumer
+// Observe message does not come across topic "test" via kafka-console-consumer
 
 (.close producer)
 (.close kafka-streams)
