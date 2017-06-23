@@ -7,9 +7,9 @@ combo provides the best of both worlds for building streaming
 applications on Kafka with Clojure:
 
 * Simple, declarative, idiomatic, composable, testable stream
-  transormation business logic via transducers
+  transformation logic, via transducers
 * Easy, battle-hardened distributed system topology specification,
-  cluster partition rebalancing, state management, etc. via Kafka
+  cluster partition rebalancing, local state management, etc. via Kafka
   Streams
 
 ## Usage
@@ -25,7 +25,7 @@ record, so the transducer should be shaped accordingly.
 This library also provides a number of stateful transducers over Kafka
 Streams' Stores API for doing joins, windowed aggregates, etc.  The
 goal of this library is to maintain feature parity with the high-level
-`KStream`, `KTable`, etc. APIs, as well as to enable transducer usage
+`KStream`, `KTable`, etc. APIs, as well as (eventually) to enable transducer usage
 in the low-level `Processor` API.
 
 ``` clojure
