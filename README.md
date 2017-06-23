@@ -33,6 +33,26 @@ In the future, I plan for this library to support:
 * An appropriate level of integration into both the low-level
   `Processor` API and the `KTable` APIs.
 
+## Installation
+
+**Note: Due to its alpha status, this library is not configured for
+CI/CD, and no JARs have been pushed to a public repository.  You'll
+have to install (as per instructions below) into your local Maven repo
+before the following instructions will work**
+
+Include the library JAR in your Boot/Leiningen dependencies:
+
+``` clojure
+[kafka-streams-clojure "0.1.0-SNAPSHOT"]
+```
+
+### Kafka Streams Dependency
+
+Kafka Streams is included as a `provided` dependency, meaning your
+application will need to include the
+[Kafka Streams JAR](https://mvnrepository.com/artifact/org.apache.kafka/kafka-streams)
+as a dependency as well as this library.
+
 ## Usage
 
 Transducers provide a more Clojure-idiomatic way to transform
@@ -46,8 +66,8 @@ record, so the transducer should be shaped accordingly.
 This library also provides a number of stateful transducers over Kafka
 Streams' Stores API for doing joins, windowed aggregates, etc.  The
 goal of this library is to maintain feature parity with the high-level
-`KStream`, `KTable`, etc. APIs, as well as (eventually) to enable transducer usage
-in the low-level `Processor` API.
+`KStream`, `KTable`, etc. APIs, as well as (eventually) to enable
+transducer usage in the low-level `Processor` API.
 
 ``` clojure
 // Start Kafka Cluster running locally
