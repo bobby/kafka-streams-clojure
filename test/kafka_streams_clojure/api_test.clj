@@ -6,23 +6,22 @@
            [org.apache.kafka.clients.producer Producer ProducerRecord]
            [org.apache.kafka.clients.consumer Consumer ConsumerRecords ConsumerRecord]
            [org.apache.kafka.streams KafkaStreams StreamsConfig]
-           [org.apache.kafka.streams.kstream KStreamBuilder Transformer TransformerSupplier]
-           [org.apache.kafka.streams.processor Processor ProcessorSupplier]))
+           [org.apache.kafka.streams.kstream KStreamBuilder Transformer TransformerSupplier]))
 
 (set! *warn-on-reflection* true)
 
 (deftest test-kafka-streams-api-types
   (testing "Integration with Kafka Streams API types"
-    (let [xform     (comp (filter (fn [[k v]] (string? v)))
-                          (map (fn [[k v]] [v k]))
-                          (filter (fn [[k v]] (= "foo" v))))
-          supplier  (api/processor-supplier xform)
-          processor (api/processor xform)]
+    (let [xform       (comp (filter (fn [[k v]] (string? v)))
+                            (map (fn [[k v]] [v k]))
+                            (filter (fn [[k v]] (= "foo" v))))
+          supplier    (api/transformer-supplier xform)
+          transformer (api/transformer xform)]
       (is (instance? TransformerSupplier supplier))
       #_(is (instance? ProcessorSupplier   supplier))
 
-      (is (instance? Transformer processor))
-      #_(is (instance? Processor   processor))
+      (is (instance? Transformer transformer))
+      #_(is (instance? Processor   transformer))
 
       (is (instance? Transformer (.get supplier)))
       #_(is (instance? Processor   (.get supplier))))))

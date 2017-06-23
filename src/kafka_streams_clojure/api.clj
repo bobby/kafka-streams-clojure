@@ -1,23 +1,11 @@
 (ns kafka-streams-clojure.api
   (:import [org.apache.kafka.streams StreamsConfig KafkaStreams KeyValue]
            [org.apache.kafka.streams.kstream Transformer TransformerSupplier KStream KStreamBuilder]
-           [org.apache.kafka.streams.processor Processor ProcessorSupplier ProcessorContext TopologyBuilder$AutoOffsetReset]))
+           [org.apache.kafka.streams.processor ProcessorContext]))
 
 (set! *warn-on-reflection* true)
 
-(defn- transform
-  ([context] context)
-  ([^ProcessorContext context [k v]]
-   (.forward context k v)
-   (.commit context)
-   context))
-
-(deftype TransducerProcessor [step-fn ^{:volatile-mutable true} context]
-  #_Processor
-  #_(process [this k v]
-    (.transform this k v))
-  #_(^void punctuate [^Processor this ^long t])
-
+(deftype TransducerTransformer [step-fn ^{:volatile-mutable true} context]
   Transformer
   (init [_ c]
     (set! context c))
@@ -30,29 +18,31 @@
   (punctuate [^Transformer this ^long t])
   (close [_]))
 
-(defn processor
-  "Creates a transducing processor for use in Kafka Streams topologies."
-  [xform]
-  (TransducerProcessor. (xform transform) nil))
+(defn- kafka-streams-step
+  ([context] context)
+  ([^ProcessorContext context [k v]]
+   (.forward context k v)
+   (.commit context)
+   context))
 
-(defn processor-supplier
+(defn transformer
+  "Creates a transducing transformer for use in Kafka Streams topologies."
+  [xform]
+  (TransducerTransformer. (xform kafka-streams-step) nil))
+
+(defn transformer-supplier
   [xform]
   (reify
-    #_ProcessorSupplier
     TransformerSupplier
-    (get [_] (processor xform))))
+    (get [_] (transformer xform))))
 
-;;; Wrap fluent build DSL in something more Clojure-y (macro?!?!?)
-
-#_(def ^:private auto-offset-reset
-    {:earliest TopologyBuilder$AutoOffsetReset/EARLIEST
-     :latest   TopologyBuilder$AutoOffsetReset/LATEST})
+;;; TODO: Wrap fluent build DSL in something more Clojure-y (macro?!?!?)
 
 (defn transduce-kstream
   ^KStream [^KStream kstream xform]
-  (.transform kstream (processor-supplier xform) (into-array String [])))
+  (.transform kstream (transformer-supplier xform) (into-array String [])))
 
-;;; Reproduce useful KStream, KTable APIs here as transducers
+;;; TODO: Reproduce useful KStream, KTable APIs here as transducers
 ;;; (i.e. for those not already covered by existing map, filter, etc.)
 ;;; (e.g. leftJoin, through, etc.)
 
