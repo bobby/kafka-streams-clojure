@@ -12,6 +12,27 @@ applications on Kafka with Clojure:
   cluster partition rebalancing, local state management, etc. via Kafka
   Streams
 
+## Status
+
+**THIS LIBRARY IS CURRENTLY ALPHA STATUS, AND IS NOT FIT FOR PRODUCTION USE!**
+
+This notice will be removed when I believe the API is stable and the
+library has performed well under heavy loads in real-world use.
+
+### Features & Roadmap
+
+Currently, this library supports:
+
+* Hooking a transducer into a `KStream` processing pipeline.
+
+In the future, I plan for this library to support:
+
+* Helper transducers for stateful computations like joins, windowed
+  aggregates, etc. to mirror the functionality of the `KStream` API,
+  but which can be composed with purely functional steps
+* An appropriate level of integration into both the low-level
+  `Processor` API and the `KTable` APIs.
+
 ## Usage
 
 Transducers provide a more Clojure-idiomatic way to transform
