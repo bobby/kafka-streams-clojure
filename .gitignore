@@ -10,3 +10,6 @@ pom.xml.asc
 /log
 .hgignore
 .hg/
+
+/.idea
+/*.iml
