@@ -27,7 +27,7 @@
       (catch Exception e
         (.printStackTrace e)))
     nil)
-  #_(^Object punctuate [^Transformer this ^long t])
+  (punctuate [^Transformer this ^long t])
   (close [_]))
 
 (defn processor
