@@ -6,9 +6,9 @@
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.apache.kafka/kafka-streams kafka-version :scope "provided"]]
+                 [org.apache.kafka/kafka-streams ~kafka-version :scope "provided"]]
   :profiles {:dev {:resource-paths ["dev"]
-                   :dependencies [[org.apache.kafka/kafka_2.11 kafka-version]
+                   :dependencies [[org.apache.kafka/kafka_2.11 ~kafka-version]
                                   [ch.qos.logback/logback-classic "1.1.7"]
                                   [org.slf4j/jcl-over-slf4j "1.7.21"]
                                   [org.slf4j/log4j-over-slf4j "1.7.21"]
