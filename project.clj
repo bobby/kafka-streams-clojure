@@ -1,12 +1,14 @@
+(def kafka-version "0.11.0.0")
+
 (defproject kafka-streams-clojure "0.1.0-SNAPSHOT"
   :description "Kafka Streams integration with Clojure transducers."
   :url "https://github.com/bobby/kafka-streams-clojure"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.apache.kafka/kafka-streams "0.10.2.1" :scope "provided"]]
+                 [org.apache.kafka/kafka-streams kafka-version :scope "provided"]]
   :profiles {:dev {:resource-paths ["dev"]
-                   :dependencies [[org.apache.kafka/kafka_2.11 "0.10.2.1"]
+                   :dependencies [[org.apache.kafka/kafka_2.11 kafka-version]
                                   [ch.qos.logback/logback-classic "1.1.7"]
                                   [org.slf4j/jcl-over-slf4j "1.7.21"]
                                   [org.slf4j/log4j-over-slf4j "1.7.21"]
