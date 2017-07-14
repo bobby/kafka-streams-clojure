@@ -1,6 +1,5 @@
 (ns kafka-streams-clojure.api
-  (:import [org.apache.kafka.streams StreamsConfig KafkaStreams KeyValue]
-           [org.apache.kafka.streams.kstream Transformer TransformerSupplier KStream KStreamBuilder]
+  (:import [org.apache.kafka.streams.kstream Transformer TransformerSupplier KStream]
            [org.apache.kafka.streams.processor ProcessorContext]))
 
 (set! *warn-on-reflection* true)
@@ -47,6 +46,9 @@
 ;;; (e.g. leftJoin, through, etc.)
 
 (comment
+
+  (import '[org.apache.kafka.streams StreamsConfig KafkaStreams]
+          org.apache.kafka.streams.kstream.KStreamBuilder)
 
   (def xform (comp (filter (fn [[k v]] (string? v)))
                    (map (fn [[k v]] [v k]))
