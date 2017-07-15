@@ -51,9 +51,9 @@
                                   (filter (fn [[k v]] (= "foo" v))))
             builder         (KStreamBuilder.)
             kstream         (-> builder
-                                (.stream (into-array String ["tset"]))
+                                (api/stream input-topic)
                                 (api/transduce-kstream xform)
-                                (.to "test"))
+                                (.to output-topic))
             kafka-streams   (KafkaStreams. builder (StreamsConfig. {StreamsConfig/APPLICATION_ID_CONFIG    "test-app-id"
                                                                     StreamsConfig/BOOTSTRAP_SERVERS_CONFIG (get kafka-config "bootstrap.servers")
                                                                     StreamsConfig/KEY_SERDE_CLASS_CONFIG   org.apache.kafka.common.serialization.Serdes$StringSerde
@@ -73,6 +73,16 @@
       (is (instance? KStream parent-stream))
       (testing "branch takes a stream and returns"
         (doseq [kstream (api/branch parent-stream
-                                    [(fn [[k v]] (= k :foo))
-                                     (fn [[k v]] (= v :branch))])]
+                                    (fn [[k v]] (= k :foo))
+                                    (fn [[k v]] (= v :branch)))]
+          (is (instance? KStream kstream)))))))
+
+(deftest test-branch-map
+  (testing "stream takes a KStreamBuilder and returns a KStream"
+    (let [parent-stream (api/stream (KStreamBuilder.) "tset")]
+      (testing "branch takes a stream and returns"
+        (doseq [[name kstream] (api/branch-map parent-stream
+                                               {:foo    (fn [[k v]] (= k :foo))
+                                                :branch (fn [[k v]] (= v :branch))})]
+          (is (keyword? name))
           (is (instance? KStream kstream)))))))

@@ -46,14 +46,37 @@
 ;;; (e.g. leftJoin, through, etc.)
 
 (defn ^KStream stream
+  "Clojure wrapper around KStreamBuilder.stream(String names...)"
   [^KStreamBuilder builder & stream-names]
   (.stream builder (into-array String stream-names)))
 
 (defn branch
-  "predicates are of [k v]"
+  "Clojure wrapper around KStream.branch(Predicate predicates...).
+  Accepts a KStream instance and a variable number of arity-1
+  predicates of [k v]."
   [^KStream kstream & predicates]
   (let [preds (into-array Predicate (map #(reify Predicate (test [_ k v] (% [k v]))) predicates))]
     (into [] (.branch kstream preds))))
+
+(defn branch-map
+  "Given a KStream instance and a map of
+
+  `keyword-branch-name -> (arity-1 predicate of [k v])`
+
+   returns a map of
+
+  `keyword-branch-name -> KStream`
+
+  as per KStream.branch"
+  [^KStream kstream branch-predicate-map]
+  (let [[branch-names predicates] (reduce (fn [agg [k v]]
+                                            (-> agg
+                                                (update-in [0] conj k)
+                                                (update-in [1] conj v)))
+                                          [[] []]
+                                          branch-predicate-map)
+        kstreams (apply branch kstream predicates)]
+    (zipmap branch-names kstreams)))
 
 (comment
   (import '[org.apache.kafka.streams StreamsConfig KafkaStreams])
