@@ -1,5 +1,5 @@
 (ns kafka-streams-clojure.api
-  (:import [org.apache.kafka.streams.kstream Transformer TransformerSupplier KStream]
+  (:import [org.apache.kafka.streams.kstream KStreamBuilder Transformer TransformerSupplier KStream Predicate]
            [org.apache.kafka.streams.processor ProcessorContext]))
 
 (set! *warn-on-reflection* true)
@@ -45,17 +45,25 @@
 ;;; (i.e. for those not already covered by existing map, filter, etc.)
 ;;; (e.g. leftJoin, through, etc.)
 
-(comment
+(defn ^KStream stream
+  [^KStreamBuilder builder & stream-names]
+  (.stream builder (into-array String stream-names)))
 
-  (import '[org.apache.kafka.streams StreamsConfig KafkaStreams]
-          org.apache.kafka.streams.kstream.KStreamBuilder)
+(defn branch
+  "predicates are of [k v]"
+  [^KStream kstream & predicates]
+  (let [preds (into-array Predicate (map #(reify Predicate (test [_ k v] (% [k v]))) predicates))]
+    (into [] (.branch kstream preds))))
+
+(comment
+  (import '[org.apache.kafka.streams StreamsConfig KafkaStreams])
 
   (def xform (comp (filter (fn [[k v]] (string? v)))
                    (map (fn [[k v]] [v k]))
                    (filter (fn [[k v]] (= "foo" v)))))
   (def builder (KStreamBuilder.))
   (def kstream (-> builder
-                   (.stream (into-array String ["tset"]))
+                   (stream "tset")
                    (transduce-kstream xform)
                    (.to "test")))
 

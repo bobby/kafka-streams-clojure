@@ -6,7 +6,7 @@
            [org.apache.kafka.clients.producer Producer ProducerRecord]
            [org.apache.kafka.clients.consumer Consumer ConsumerRecords ConsumerRecord]
            [org.apache.kafka.streams KafkaStreams StreamsConfig]
-           [org.apache.kafka.streams.kstream KStreamBuilder Transformer TransformerSupplier]))
+           [org.apache.kafka.streams.kstream KStream KStreamBuilder Transformer TransformerSupplier]))
 
 (set! *warn-on-reflection* true)
 
@@ -66,3 +66,13 @@
         (is (= [["bar" "foo"]] (consume-n-records consumer output-topic 1)))
 
         (.close kafka-streams)))))
+
+(deftest test-branch-and-stream
+  (testing "stream takes a KStreamBuilder and returns a KStream"
+    (let [parent-stream (api/stream (KStreamBuilder.) "tset")]
+      (is (instance? KStream parent-stream))
+      (testing "branch takes a stream and returns"
+        (doseq [kstream (api/branch parent-stream
+                                    [(fn [[k v]] (= k :foo))
+                                     (fn [[k v]] (= v :branch))])]
+          (is (instance? KStream kstream)))))))
