@@ -1,6 +1,15 @@
 (ns kafka-streams-clojure.api
-  (:import [org.apache.kafka.streams.kstream KStreamBuilder Transformer TransformerSupplier KStream Predicate]
-           [org.apache.kafka.streams.processor ProcessorContext]))
+  (:import [org.apache.kafka.streams.kstream
+            KStreamBuilder
+            Transformer
+            TransformerSupplier
+            KStream
+            Predicate
+            ValueJoiner
+            KeyValueMapper]
+           [org.apache.kafka.streams.processor ProcessorContext]
+           [org.apache.kafka.streams KeyValue]
+           [org.apache.kafka.streams.state KeyValueIterator ReadOnlyKeyValueStore]))
 
 (set! *warn-on-reflection* true)
 
@@ -77,6 +86,70 @@
                                           branch-predicate-map)
         kstreams (apply branch kstream predicates)]
     (zipmap branch-names kstreams)))
+
+(defn ^ValueJoiner value-joiner
+  [f]
+  (reify ValueJoiner
+    (apply [_ v1 v2]
+      (f v1 v2))))
+
+(defn ^KeyValueMapper key-value-mapper
+  [f]
+  (reify KeyValueMapper
+    (apply [_ k v]
+      (f [k v]))))
+
+(defprotocol IReadOnlyKeyValueStore
+  (-get [this key]
+    "Gets the value at the given key.")
+  (-all [this]
+    "Returns a Seqable of all `[key value]` pairs in this store.  The
+    Seqable is also Closeable, and must be `.close`d after use.")
+  (-range [this start end]
+    "Returns a Seqable of `[key value]` pairs between keys `start` and
+    `end`.  The Seqable is also Closeable, and must be `.close`d after
+    use."))
+
+(defn get
+  "Gets the value at the given key."
+  [this db-name]
+  (-get this db-name))
+
+(defn all
+  "Returns a Seqable of all `[key value]` pairs in this store.  The
+  Seqable is also Closeable, and must be `.close`d after use."
+  [this]
+  (-all this))
+
+(defn range
+  "Returns a Seqable of `[key value]` pairs between keys `start` and
+  `end`.  The Seqable is also Closeable, and must be `.close`d after
+  use."
+  [this start end]
+  (-range this start end))
+
+(deftype KeyValueTupleIterator [^KeyValueIterator iter]
+  KeyValueIterator
+  (hasNext [_] (.hasNext iter))
+  (next [_]
+    (let [^KeyValue kv (.next iter)]
+      [(.key kv) (.value kv)]))
+  (remove [_] (throw (UnsupportedOperationException. "Not supported")))
+  (close [_] (.close iter))
+  (peekNextKey [_] (.peekNextKey iter)))
+
+(extend-type ReadOnlyKeyValueStore
+  IReadOnlyKeyValueStore
+  (-get [this _key]
+    (.get this _key))
+  (-all [this]
+    (-> this
+        .all
+        ->KeyValueTupleIterator))
+  (-range [this start end]
+    (-> this
+        (.range start end)
+        ->KeyValueTupleIterator)))
 
 (comment
   (import '[org.apache.kafka.streams StreamsConfig KafkaStreams])
