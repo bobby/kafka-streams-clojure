@@ -1,6 +1,5 @@
 (ns kafka-streams-clojure.api
   (:import [org.apache.kafka.streams.kstream
-            KStreamBuilder
             Transformer
             TransformerSupplier
             KStream
@@ -8,7 +7,7 @@
             ValueJoiner
             KeyValueMapper]
            [org.apache.kafka.streams.processor ProcessorContext]
-           [org.apache.kafka.streams KeyValue]
+           [org.apache.kafka.streams StreamsBuilder KeyValue]
            [org.apache.kafka.streams.state KeyValueIterator ReadOnlyKeyValueStore]))
 
 (set! *warn-on-reflection* true)
@@ -55,9 +54,9 @@
 ;;; (e.g. leftJoin, through, etc.)
 
 (defn ^KStream stream
-  "Clojure wrapper around KStreamBuilder.stream(String names...)"
-  [^KStreamBuilder builder & stream-names]
-  (.stream builder (into-array String stream-names)))
+  "Clojure wrapper around StreamsBuilder.stream(String names...)"
+  [^StreamsBuilder builder & stream-names]
+  (.stream builder stream-names))
 
 (defn branch
   "Clojure wrapper around KStream.branch(Predicate predicates...).
@@ -152,22 +151,23 @@
         ->KeyValueTupleIterator)))
 
 (comment
-  (import '[org.apache.kafka.streams StreamsConfig KafkaStreams])
+  (import '[org.apache.kafka.streams StreamsConfig KafkaStreams StreamsBuilder])
 
   (def xform (comp (filter (fn [[k v]] (string? v)))
                    (map (fn [[k v]] [v k]))
                    (filter (fn [[k v]] (= "foo" v)))))
-  (def builder (KStreamBuilder.))
+  (def builder (StreamsBuilder.))
   (def kstream (-> builder
                    (stream "tset")
                    (transduce-kstream xform)
                    (.to "test")))
 
   (def kafka-streams
-    (KafkaStreams. builder (StreamsConfig. {StreamsConfig/APPLICATION_ID_CONFIG    "test-app-id"
-                                            StreamsConfig/BOOTSTRAP_SERVERS_CONFIG "localhost:9092"
-                                            StreamsConfig/KEY_SERDE_CLASS_CONFIG   org.apache.kafka.common.serialization.Serdes$StringSerde
-                                            StreamsConfig/VALUE_SERDE_CLASS_CONFIG org.apache.kafka.common.serialization.Serdes$StringSerde})))
+    (KafkaStreams. (.build builder)
+                   (StreamsConfig. {StreamsConfig/APPLICATION_ID_CONFIG    "test-app-id"
+                                    StreamsConfig/BOOTSTRAP_SERVERS_CONFIG "localhost:9092"
+                                    StreamsConfig/KEY_SERDE_CLASS_CONFIG   org.apache.kafka.common.serialization.Serdes$StringSerde
+                                    StreamsConfig/VALUE_SERDE_CLASS_CONFIG org.apache.kafka.common.serialization.Serdes$StringSerde})))
   (.start kafka-streams)
 
   (import '[org.apache.kafka.clients.producer KafkaProducer ProducerRecord])

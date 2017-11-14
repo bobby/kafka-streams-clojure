@@ -1,4 +1,4 @@
-(def kafka-version "0.11.0.0")
+(def kafka-version "1.0.0")
 
 (defproject kafka-streams-clojure "0.1.0-SNAPSHOT"
   :description "Kafka Streams integration with Clojure transducers."

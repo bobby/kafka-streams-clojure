@@ -5,8 +5,8 @@
   (:import [kafka-streams-clojure.api ]
            [org.apache.kafka.clients.producer Producer ProducerRecord]
            [org.apache.kafka.clients.consumer Consumer ConsumerRecords ConsumerRecord]
-           [org.apache.kafka.streams KafkaStreams StreamsConfig]
-           [org.apache.kafka.streams.kstream KStream KStreamBuilder Transformer TransformerSupplier]))
+           [org.apache.kafka.streams StreamsBuilder KafkaStreams StreamsConfig]
+           [org.apache.kafka.streams.kstream KStream Transformer TransformerSupplier]))
 
 (set! *warn-on-reflection* true)
 
@@ -49,15 +49,16 @@
             xform           (comp (filter (fn [[k v]] (string? v)))
                                   (map (fn [[k v]] [v k]))
                                   (filter (fn [[k v]] (= "foo" v))))
-            builder         (KStreamBuilder.)
+            builder         (StreamsBuilder.)
             kstream         (-> builder
                                 (api/stream input-topic)
                                 (api/transduce-kstream xform)
                                 (.to output-topic))
-            kafka-streams   (KafkaStreams. builder (StreamsConfig. {StreamsConfig/APPLICATION_ID_CONFIG    "test-app-id"
-                                                                    StreamsConfig/BOOTSTRAP_SERVERS_CONFIG (get kafka-config "bootstrap.servers")
-                                                                    StreamsConfig/KEY_SERDE_CLASS_CONFIG   org.apache.kafka.common.serialization.Serdes$StringSerde
-                                                                    StreamsConfig/VALUE_SERDE_CLASS_CONFIG org.apache.kafka.common.serialization.Serdes$StringSerde}))
+            kafka-streams   (KafkaStreams. (.build builder)
+                                           (StreamsConfig. {StreamsConfig/APPLICATION_ID_CONFIG    (str "test-app-id-" (java.util.UUID/randomUUID))
+                                                            StreamsConfig/BOOTSTRAP_SERVERS_CONFIG (get kafka-config "bootstrap.servers")
+                                                            StreamsConfig/KEY_SERDE_CLASS_CONFIG   org.apache.kafka.common.serialization.Serdes$StringSerde
+                                                            StreamsConfig/VALUE_SERDE_CLASS_CONFIG org.apache.kafka.common.serialization.Serdes$StringSerde}))
             input-values    {"foo" "bar"
                              "baz" "quux"}]
         (.start kafka-streams)
@@ -68,8 +69,8 @@
         (.close kafka-streams)))))
 
 (deftest test-branch-and-stream
-  (testing "stream takes a KStreamBuilder and returns a KStream"
-    (let [parent-stream (api/stream (KStreamBuilder.) "tset")]
+  (testing "stream takes a StreamsBuilder and returns a KStream"
+    (let [parent-stream (api/stream (StreamsBuilder.) "tset")]
       (is (instance? KStream parent-stream))
       (testing "branch takes a stream and returns"
         (doseq [kstream (api/branch parent-stream
@@ -78,8 +79,8 @@
           (is (instance? KStream kstream)))))))
 
 (deftest test-branch-map
-  (testing "stream takes a KStreamBuilder and returns a KStream"
-    (let [parent-stream (api/stream (KStreamBuilder.) "tset")]
+  (testing "stream takes a StreamsBuilder and returns a KStream"
+    (let [parent-stream (api/stream (StreamsBuilder.) "tset")]
       (testing "branch takes a stream and returns"
         (doseq [[name kstream] (api/branch-map parent-stream
                                                {:foo    (fn [[k v]] (= k :foo))
