@@ -1,4 +1,5 @@
 (ns kafka-streams-clojure.api
+  (:refer-clojure :exclude [get])
   (:import [org.apache.kafka.streams.kstream
             Transformer
             TransformerSupplier
@@ -111,8 +112,8 @@
 
 (defn get
   "Gets the value at the given key."
-  [this db-name]
-  (-get this db-name))
+  [this _key]
+  (-get this _key))
 
 (defn all
   "Returns a Seqable of all `[key value]` pairs in this store.  The
