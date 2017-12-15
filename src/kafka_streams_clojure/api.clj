@@ -1,5 +1,5 @@
 (ns kafka-streams-clojure.api
-  (:refer-clojure :exclude [get])
+  (:refer-clojure :exclude [get range])
   (:import [org.apache.kafka.streams.kstream
             Transformer
             TransformerSupplier
